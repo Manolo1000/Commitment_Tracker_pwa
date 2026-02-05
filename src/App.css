@@ -1,0 +1,277 @@
+.wrap {
+  min-height: 100vh;
+  background: #f7f7f7;
+  padding-bottom: 220px;
+  width: 100%;
+  max-width: 1200px;   /* keeps it phone-like on desktop. boosted from 520 - 1200px */
+  margin: 0 auto;     /* centers it */
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 12px;
+}
+
+.title {
+  font-weight: 800;
+  font-size: 18px;
+  color: #111
+}
+
+.navBtn {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 0;
+  background: #eee;
+  font-size: 16px;
+}
+
+.weekRow {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  padding: 0 10px 6px;
+  color: #666;
+  font-weight: 600;
+}
+
+.weekLabel {
+  text-align: center;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  padding: 0 10px;
+  margin: 16px;
+}
+
+.cellBlank {
+  aspect-ratio: 1 / 1;
+}
+
+.cell {
+  aspect-ratio: 1 / 1;
+  border-radius: 14px;
+  border: 1px solid #e6e6e6;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: left;
+  color: #111
+}
+
+.cellSelected {
+  border: 2px solid #111;
+}
+
+.cellTop {
+  font-weight: 800;
+}
+
+.miniBarOuter {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.6);
+  overflow: hidden;
+}
+
+.miniBarInner {
+  height: 100%;
+  background: #111;
+}
+
+.sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: -80vh;
+  height: 80vh;
+  background: #fff;
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+  box-shadow: 0 -10px 30px rgba(0,0,0,0.12);
+  transition: bottom 220ms ease;
+  display: flex;
+  flex-direction: column;
+  z-index: 10;
+}
+
+.sheet.open {
+  bottom: 0;
+}
+
+.sheetHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.sheetTitle {
+  font-weight: 800;
+}
+
+.linkBtn {
+  border: 0;
+  background: transparent;
+  color: #007aff;
+  font-weight: 700;
+  padding: 10px;
+}
+
+.progressWrap {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.progressText {
+  font-weight: 800;
+}
+
+.barOuter {
+  height: 14px;
+  border-radius: 999px;
+  background: #eee;
+  overflow: hidden;
+}
+
+.barInner {
+  height: 100%;
+  background: #111;
+}
+
+.actionsRow {
+  display: flex;
+  gap: 10px;
+}
+
+.actionBtn {
+  border: 0;
+  background: #eee;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-weight: 700;
+}
+
+.sectionTitle {
+  padding: 0 12px;
+  font-weight: 800;
+  margin-top: 4px;
+}
+
+.taskList {
+  padding: 6px 0;
+  overflow: auto;
+  flex: 1;
+}
+
+.taskRow {
+  width: 100%;
+  border: 0;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  text-align: left;
+}
+
+.taskRowDone {
+  background: #f7fff7;
+}
+
+.checkbox {
+  width: 28px;
+  font-size: 18px;
+}
+
+.taskTextDone {
+  text-decoration: line-through;
+  color: #666;
+}
+
+.addTaskRow {
+  display: flex;
+  gap: 10px;
+  padding: 12px;
+  border-top: 1px solid #eee;
+}
+
+.input {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  background: #fafafa;
+}
+
+.addBtn {
+  border: 0;
+  background: #111;
+  color: #fff;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-weight: 800;
+}
+/* Calendar area becomes the "main" */
+.wrap {
+  min-height: 100vh;
+  background: #f7f7f7;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 12px 12px 24px;
+}
+
+/* When panel is open, subtly tighten spacing */
+.wrap.panelOpen .grid {
+  transform: scale(0.92);
+  transform-origin: top center;
+  transition: transform 220ms ease;
+}
+
+.grid {
+  transition: transform 220ms ease;
+}
+@media (min-width: 900px) {
+  .wrap {
+    max-width: 1200px;
+  }
+
+  /* Stop scaling on desktop */
+  .wrap.panelOpen .grid {
+    transform: none;
+  }
+
+  /* Turn sheet into a right drawer */
+  .sheet {
+    top: 0;
+    bottom: 0;
+    height: 100vh;
+    width: 420px;
+    left: auto;
+    right: -440px; /* hidden */
+    border-top-left-radius: 18px;
+    border-top-right-radius: 0;
+    box-shadow: -10px 0 30px rgba(0,0,0,0.12);
+    transition: right 220ms ease;
+  }
+
+  .sheet.open {
+    right: 0;
+  }
+
+  /* Give calendar room beside the drawer */
+  .wrap.panelOpen {
+    padding-right: 460px;
+    transition: padding-right 220ms ease;
+  }
+}
