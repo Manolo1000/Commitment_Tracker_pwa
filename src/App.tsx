@@ -4,6 +4,12 @@ import "./App.css";
 type Task = { id: string; title: string; active: boolean };
 type CompletionMap = Record<string, Record<string, boolean>>;
 
+type DailyTaskMap = Record<string, Task[]>; // date -> tasks
+
+const [dailyTasks, setDailyTasks] = useState<DailyTaskMap>({});
+const [newDailyTaskTitle, setNewDailyTaskTitle] = useState("");
+
+
 const STORAGE_KEY = "commitmentTracker_pwa_v1";
 
 function pad2(n: number) {
@@ -68,6 +74,7 @@ export default function App() {
       const parsed = JSON.parse(raw);
       if (parsed?.tasks) setTasks(parsed.tasks);
       if (parsed?.completions) setCompletions(parsed.completions);
+      if (parsed?.dailyTasks) setDailyTasks(parsed.dailyTasks);
     } catch {
       // ignore
     }
@@ -75,8 +82,8 @@ export default function App() {
 
   // Save
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ tasks, completions }));
-  }, [tasks, completions]);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ tasks, completions, dailyTasks }));
+  }, [tasks, completions, dailyTasks]);
 
   const cells = useMemo(() => {
     const firstDow = dayOfWeek(year, monthIndex, 1);
@@ -102,10 +109,19 @@ export default function App() {
     return `${names[monthIndex]} ${year}`;
   }, [monthIndex, year]);
 
+  const tasksForSelectedDay = useMemo(() => {
+    const daySpecific = dailyTasks[selectedDate] || [];
+    return [...tasks.filter(t => t.active), ...daySpecific.filter(t => t.active)];
+  }, [tasks, dailyTasks, selectedDate]);
+  
+
   const selectedProgress = useMemo(
-    () => computeProgress(selectedDate, tasks, completions),
-    [selectedDate, tasks, completions]
+    () => computeProgress(selectedDate, tasksForSelectedDay, completions),
+    [selectedDate, tasksForSelectedDay, completions]
   );
+  
+
+  
 
   function toggleTaskDone(dateKey: string, taskId: string) {
     setCompletions((prev) => {
@@ -129,6 +145,21 @@ export default function App() {
     setTasks((prev) => [...prev, { id: uid(), title, active: true }]);
     setNewTaskTitle("");
   }
+
+  function addDailyTask() {
+    const title = newDailyTaskTitle.trim();
+    if (!title) return;
+  
+    const newT: Task = { id: uid(), title, active: true };
+  
+    setDailyTasks(prev => {
+      const cur = prev[selectedDate] || [];
+      return { ...prev, [selectedDate]: [...cur, newT] };
+    });
+  
+    setNewDailyTaskTitle("");
+  }
+  
 
   function prevMonth() {
     setPanelOpen(false);
@@ -170,7 +201,10 @@ export default function App() {
         {cells.map((item) => {
           if (!item.dateKey) return <div key={item.key} className="cellBlank" />;
 
-          const prog = computeProgress(item.dateKey, tasks, completions);
+          const daySpecific = dailyTasks[item.dateKey] || [];
+          const combined = [...tasks.filter(t => t.active), ...daySpecific.filter(t => t.active)];
+          const prog = computeProgress(item.dateKey, combined, completions);
+
           const bg = statusColor(prog.pct, prog.total);
           const isSelected = item.dateKey === selectedDate;
 
@@ -217,19 +251,20 @@ export default function App() {
         <div className="sectionTitle">Tasks</div>
 
         <div className="taskList">
-          {tasks.filter((t) => t.active).map((t) => {
-            const done = !!completions[selectedDate]?.[t.id];
-            return (
-              <button
-                key={t.id}
-                className={`taskRow ${done ? "taskRowDone" : ""}`}
-                onClick={() => toggleTaskDone(selectedDate, t.id)}
-              >
-                <span className="checkbox">{done ? "☑" : "☐"}</span>
-                <span className={`taskText ${done ? "taskTextDone" : ""}`}>{t.title}</span>
-              </button>
-            );
-          })}
+        {tasksForSelectedDay.map((t) => {
+  const done = !!completions[selectedDate]?.[t.id];
+  return (
+    <button
+      key={t.id}
+      className={`taskRow ${done ? "taskRowDone" : ""}`}
+      onClick={() => toggleTaskDone(selectedDate, t.id)}
+    >
+      <span className="checkbox">{done ? "☑" : "☐"}</span>
+      <span className={`taskText ${done ? "taskTextDone" : ""}`}>{t.title}</span>
+    </button>
+  );
+})}
+
         </div>
 
         <div className="addTaskRow">
@@ -242,6 +277,17 @@ export default function App() {
           />
           <button className="addBtn" onClick={addTask}>Add</button>
         </div>
+        <div className="addTaskRow">
+  <input
+    className="input"
+    value={newDailyTaskTitle}
+    onChange={(e) => setNewDailyTaskTitle(e.target.value)}
+    placeholder="Add a task for this day…"
+    onKeyDown={(e) => e.key === "Enter" && addDailyTask()}
+  />
+  <button className="addBtn" onClick={addDailyTask}>Add</button>
+</div>
+
       </div>
     </div>
   );
