@@ -6,8 +6,6 @@ type CompletionMap = Record<string, Record<string, boolean>>;
 
 type DailyTaskMap = Record<string, Task[]>; // date -> tasks
 
-const [dailyTasks, setDailyTasks] = useState<DailyTaskMap>({});
-const [newDailyTaskTitle, setNewDailyTaskTitle] = useState("");
 
 
 const STORAGE_KEY = "commitmentTracker_pwa_v1";
@@ -60,6 +58,10 @@ export default function App() {
     { id: "study", title: "Study", active: true },
     { id: "workout", title: "Workout", active: true },
   ]);
+
+  const [dailyTasks, setDailyTasks] = useState<DailyTaskMap>({});
+  const [newDailyTaskTitle, setNewDailyTaskTitle] = useState("");
+
 
   const [completions, setCompletions] = useState<CompletionMap>({});
   const [selectedDate, setSelectedDate] = useState<string>(toISODate(today));
@@ -134,7 +136,7 @@ export default function App() {
   function markAll(dateKey: string, value: boolean) {
     setCompletions((prev) => {
       const nextDay: Record<string, boolean> = {};
-      for (const t of tasks.filter((t) => t.active)) nextDay[t.id] = value;
+      for (const t of tasksForSelectedDay) nextDay[t.id] = value;
       return { ...prev, [dateKey]: nextDay };
     });
   }
