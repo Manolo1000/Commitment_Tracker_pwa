@@ -48,6 +48,8 @@ function statusColor(pct: number, total: number) {
   return "#c7f9cc";
 }
 
+
+
 export default function App() {
   const today = new Date();
   const [year, setYear] = useState(today.getFullYear());
@@ -111,10 +113,14 @@ export default function App() {
     return `${names[monthIndex]} ${year}`;
   }, [monthIndex, year]);
 
-  const tasksForSelectedDay = useMemo(() => {
-    const daySpecific = dailyTasks[selectedDate] || [];
-    return [...tasks.filter(t => t.active), ...daySpecific.filter(t => t.active)];
+  type TaskWithSource = Task & { source: "month" | "day" };
+
+  const tasksForSelectedDay = useMemo<TaskWithSource[]>(() => {
+    const monthTasks = tasks.filter(t => t.active).map(t => ({ ...t, source: "month" as const }));
+    const dayTasks = (dailyTasks[selectedDate] || []).filter(t => t.active).map(t => ({ ...t, source: "day" as const }));
+    return [...monthTasks, ...dayTasks];
   }, [tasks, dailyTasks, selectedDate]);
+
   
 
   const selectedProgress = useMemo(
@@ -134,12 +140,17 @@ export default function App() {
   }
 
   function markAll(dateKey: string, value: boolean) {
+    const monthTasks = tasks.filter(t => t.active);
+    const dayTasks = (dailyTasks[dateKey] || []).filter(t => t.active);
+    const combined = [...monthTasks, ...dayTasks];
+  
     setCompletions((prev) => {
       const nextDay: Record<string, boolean> = {};
-      for (const t of tasksForSelectedDay) nextDay[t.id] = value;
+      for (const t of combined) nextDay[t.id] = value;
       return { ...prev, [dateKey]: nextDay };
     });
   }
+  
 
   function addTask() {
     const title = newTaskTitle.trim();
@@ -160,6 +171,27 @@ export default function App() {
     });
   
     setNewDailyTaskTitle("");
+  }
+  
+  function removeTask(taskId: string, source: "month" | "day") {
+    if (source === "month") {
+      // Archive monthly task (keeps historical completions intact)
+      setTasks(prev => prev.map(t => (t.id === taskId ? { ...t, active: false } : t)));
+    } else {
+      // Remove from that specific day
+      setDailyTasks(prev => {
+        const cur = prev[selectedDate] || [];
+        const next = cur.filter(t => t.id !== taskId);
+        return { ...prev, [selectedDate]: next };
+      });
+    }
+  
+    // Optional cleanup: remove completion flag for that task on this day (keeps progress accurate)
+    setCompletions(prev => {
+      const day = { ...(prev[selectedDate] || {}) };
+      delete day[taskId];
+      return { ...prev, [selectedDate]: day };
+    });
   }
   
 
@@ -255,17 +287,30 @@ export default function App() {
         <div className="taskList">
         {tasksForSelectedDay.map((t) => {
   const done = !!completions[selectedDate]?.[t.id];
+
   return (
-    <button
-      key={t.id}
-      className={`taskRow ${done ? "taskRowDone" : ""}`}
-      onClick={() => toggleTaskDone(selectedDate, t.id)}
-    >
-      <span className="checkbox">{done ? "☑" : "☐"}</span>
-      <span className={`taskText ${done ? "taskTextDone" : ""}`}>{t.title}</span>
-    </button>
+    <div key={t.id} className={`taskRowWrap ${done ? "taskRowDone" : ""}`}>
+      <button
+        className="taskRowMain"
+        onClick={() => toggleTaskDone(selectedDate, t.id)}
+      >
+        <span className="checkbox">{done ? "☑" : "☐"}</span>
+        <span className={`taskText ${done ? "taskTextDone" : ""}`}>{t.title}</span>
+        {t.source === "day" && <span className="pill">Today</span>}
+      </button>
+
+      <button
+        className="trashBtn"
+        onClick={() => removeTask(t.id, t.source)}
+        aria-label="Remove task"
+        title={t.source === "month" ? "Archive monthly task" : "Remove daily task"}
+      >
+        🗑️
+      </button>
+    </div>
   );
 })}
+
 
         </div>
 

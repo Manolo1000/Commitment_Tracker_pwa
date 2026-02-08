@@ -1,11 +1,4 @@
-.wrap {
-  min-height: 100vh;
-  background: #f7f7f7;
-  padding-bottom: 220px;
-  width: 100%;
-  max-width: 1200px;   /* keeps it phone-like on desktop. boosted from 520 - 1200px */
-  margin: 0 auto;     /* centers it */
-}
+
 
 .header {
   display: flex;
@@ -45,8 +38,10 @@
   grid-template-columns: repeat(7, 1fr);
   gap: 8px;
   padding: 0 10px;
-  margin: 16px;
+  margin: 0 10px;
+  transition: transform 220ms ease;
 }
+
 
 .cellBlank {
   aspect-ratio: 1 / 1;
@@ -226,10 +221,11 @@
   min-height: 100vh;
   background: #f7f7f7;
   width: 100%;
-  max-width: 900px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 12px 12px 24px;
+  padding: 12px 12px 220px; /* keep space so bottom sheet doesn’t cover content */
 }
+
 
 /* When panel is open, subtly tighten spacing */
 .wrap.panelOpen .grid {
@@ -275,3 +271,43 @@
     transition: padding-right 220ms ease;
   }
 }
+
+.taskRowWrap {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid #f0f0f0;
+  background: #fff;
+}
+
+.taskRowMain {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 12px;
+  text-align: left;
+}
+
+.trashBtn {
+  width: 56px;
+  border: 0;
+  background: transparent;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.trashBtn:hover {
+  background: #f3f3f3;
+}
+
+.pill {
+  margin-left: auto;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #eee;
+  color: #333;
+}
+
